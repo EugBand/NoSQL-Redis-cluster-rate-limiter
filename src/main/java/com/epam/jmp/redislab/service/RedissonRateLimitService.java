@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import com.epam.jmp.redislab.api.RequestDescriptor;
 import com.epam.jmp.redislab.configuration.ratelimit.RateLimitRule;
-import com.epam.jmp.redislab.configuration.ratelimit.RateLimitTimeInterval;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -21,23 +20,13 @@ import io.github.bucket4j.Refill;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 
 @Component
-public class JedisRateLimitService implements RateLimitService {
+public class RedissonRateLimitService implements RateLimitService {
 
     @Autowired
     ProxyManager<String> proxyManager;
 
     @Autowired
     Set<RateLimitRule> rateLimitRules;
-
-    private static int getDuration(RateLimitRule rule) {
-        if (rule.getTimeInterval().equals(RateLimitTimeInterval.HOUR)) {
-            return 3600;
-        }
-        if (rule.getTimeInterval().equals(RateLimitTimeInterval.MINUTE)) {
-            return 60;
-        }
-        return 0;
-    }
 
     @Override
     public boolean shouldLimit(Set<RequestDescriptor> requestDescriptors) {
@@ -86,10 +75,5 @@ public class JedisRateLimitService implements RateLimitService {
         return limitRules.findFirst().orElse(defaultRule);
     }
 
-    private String assembleKey(RequestDescriptor descriptor) {
-        return descriptor.getAccountId().orElse("") +
-                descriptor.getClientIp().orElse("") +
-                descriptor.getRequestType().orElse("");
 
-    }
 }
